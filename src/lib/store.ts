@@ -186,6 +186,55 @@ export function addPayment(
   return newData;
 }
 
+export function updatePayment(
+  data: AppData,
+  invoiceId: string,
+  paymentId: string,
+  updates: { amount?: number; date?: string; bankCommission?: number },
+  resolution?: PaymentResolution
+): AppData {
+  const newData = {
+    ...data,
+    invoices: data.invoices.map((inv) => {
+      if (inv.id !== invoiceId) return inv;
+      return {
+        ...inv,
+        paymentResolution: resolution !== undefined ? resolution : inv.paymentResolution,
+        payments: inv.payments.map((p) => {
+          if (p.id !== paymentId) return p;
+          const newAmount = updates.amount !== undefined ? updates.amount : p.amount;
+          const newAmountUsd = inv.currency === "USD" ? newAmount : newAmount / (inv.exchangeRate || 1);
+          return {
+            ...p,
+            amount: newAmount,
+            amountUsd: newAmountUsd,
+            date: updates.date !== undefined ? updates.date : p.date,
+          };
+        }),
+      };
+    }),
+  };
+  saveData(newData);
+  return newData;
+}
+
+export function deletePayment(data: AppData, invoiceId: string, paymentId: string): AppData {
+  const newData = {
+    ...data,
+    invoices: data.invoices.map((inv) => {
+      if (inv.id !== invoiceId) return inv;
+      const remaining = inv.payments.filter((p) => p.id !== paymentId);
+      return {
+        ...inv,
+        payments: remaining,
+        paymentResolution: remaining.length === 0 ? null : inv.paymentResolution,
+      };
+    }),
+  };
+  saveData(newData);
+  return newData;
+}
+
 // Computed helpers
 export function getInvoiceBalance(inv: Invoice): number {
   const totalPaid = inv.payments.reduce((s, p) => s + p.amountUsd, 0);
