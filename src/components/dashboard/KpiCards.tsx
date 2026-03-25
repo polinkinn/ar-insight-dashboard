@@ -2,21 +2,22 @@ import { AlertTriangle, Clock, CheckCircle, DollarSign } from "lucide-react";
 import { formatUsd } from "@/lib/format";
 import { Invoice, getInvoiceBalance, isOverdue } from "@/lib/store";
 
+const MONTHS_RU_FULL = [
+  "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+  "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+];
+
 interface KpiCardsProps {
-  invoices: Invoice[];        // filtered by issueDate (for total AR)
-  allInvoices: Invoice[];     // all invoices (for payment-date based metrics)
+  invoices: Invoice[];        // filtered by all filters (issueDate based)
+  allInvoices: Invoice[];     // filtered by entity+client only (for payment-date metrics)
   selectedYear: number;
-  selectedMonths: number[];   // empty = all months
+  selectedMonths: number[];
 }
 
 export function KpiCards({ invoices, allInvoices, selectedYear, selectedMonths }: KpiCardsProps) {
-  // Total AR: from filtered invoices (by issue date)
   const totalAr = invoices.reduce((s, i) => s + getInvoiceBalance(i), 0);
-
-  // Overdue: from filtered invoices where dueDate < today and balance > 0
   const overdueTotal = invoices.filter(isOverdue).reduce((s, i) => s + getInvoiceBalance(i), 0);
 
-  // Expected: from filtered invoices where dueDate >= today and balance > 0
   const now = new Date();
   const expectedTotal = invoices
     .filter((i) => {
@@ -25,8 +26,7 @@ export function KpiCards({ invoices, allInvoices, selectedYear, selectedMonths }
     })
     .reduce((s, i) => s + getInvoiceBalance(i), 0);
 
-  // Paid: sum ALL payments where payment.date falls in selected year+months
-  // This searches across ALL invoices, not just filtered ones
+  // Payments filtered by payment.date matching year+months, from entity+client filtered invoices
   const paidInPeriod = allInvoices.reduce((s, inv) => {
     const matchingPayments = inv.payments.filter((p) => {
       const d = new Date(p.date);
@@ -37,17 +37,21 @@ export function KpiCards({ invoices, allInvoices, selectedYear, selectedMonths }
     return s + matchingPayments.reduce((ps, p) => ps + p.amountUsd, 0);
   }, 0);
 
-  const periodLabel = selectedMonths.length === 0
-    ? `за ${selectedYear}`
-    : selectedMonths.length === 1
-      ? "за месяц"
-      : "за период";
+  // Dynamic subtitle
+  let periodLabel: string;
+  if (selectedMonths.length === 0 || selectedMonths.length === 12) {
+    periodLabel = `за ${selectedYear}`;
+  } else if (selectedMonths.length === 1) {
+    periodLabel = `за ${MONTHS_RU_FULL[selectedMonths[0]]} ${selectedYear}`;
+  } else {
+    periodLabel = "за выбранный период";
+  }
 
   const cards = [
     { label: "Общая задолженность", value: totalAr, icon: DollarSign, color: "text-primary" },
     { label: "Просрочено", value: overdueTotal, icon: AlertTriangle, color: "text-destructive" },
     { label: "Ожидается к поступлению", value: expectedTotal, icon: Clock, color: "text-warning" },
-    { label: `Оплачено (${periodLabel})`, value: paidInPeriod, icon: CheckCircle, color: "text-success" },
+    { label: "Поступления (итого)", value: paidInPeriod, icon: CheckCircle, color: "text-success", sub: periodLabel },
   ];
 
   return (
@@ -66,6 +70,9 @@ export function KpiCards({ invoices, allInvoices, selectedYear, selectedMonths }
           <span className={`font-mono text-2xl font-semibold ${card.color}`}>
             {formatUsd(card.value)}
           </span>
+          {"sub" in card && card.sub && (
+            <p className="text-xs text-muted-foreground mt-1">{card.sub}</p>
+          )}
         </div>
       ))}
     </div>

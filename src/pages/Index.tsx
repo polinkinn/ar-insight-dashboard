@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useAppData } from "@/lib/useAppData";
-import { FilterProvider, useFilters, filterInvoices } from "@/lib/filters";
+import { FilterProvider, useFilters, filterInvoices, filterInvoicesNonDate } from "@/lib/filters";
 import { KpiCards } from "@/components/dashboard/KpiCards";
 import { AgingChart } from "@/components/dashboard/AgingChart";
 import { TrendCharts } from "@/components/dashboard/TrendCharts";
@@ -17,7 +17,10 @@ function DashboardContent() {
   const { filters } = useFilters();
   const [tab, setTab] = useState<Tab>("dashboard");
 
+  // Filtered by all filters (year + months + entity + client) based on issueDate
   const filtered = filterInvoices(data.invoices, filters);
+  // Filtered by entity + client only (for payment-date based metrics)
+  const filteredNonDate = filterInvoicesNonDate(data.invoices, filters);
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
     { id: "dashboard", label: "Дашборд", icon: BarChart3 },
@@ -59,12 +62,12 @@ function DashboardContent() {
           <>
             <KpiCards
               invoices={filtered}
-              allInvoices={data.invoices}
+              allInvoices={filteredNonDate}
               selectedYear={filters.year}
               selectedMonths={filters.months}
             />
             <AgingChart invoices={filtered} clients={data.clients} />
-            <TrendCharts invoices={filtered} allInvoices={data.invoices} />
+            <TrendCharts invoices={filtered} allInvoices={filteredNonDate} />
             <DashboardTables invoices={filtered} clients={data.clients} />
           </>
         )}
