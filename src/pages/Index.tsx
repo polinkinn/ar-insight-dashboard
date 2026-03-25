@@ -27,7 +27,7 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
+      <header className="border-b border-border bg-card sticky top-0 z-10">
         <div className="max-w-[1720px] mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
             <h1 className="text-sm font-semibold tracking-tight text-foreground">
@@ -50,7 +50,7 @@ function DashboardContent() {
               ))}
             </nav>
           </div>
-          <FilterBar clients={data.clients} />
+          <FilterBar clients={data.clients} invoices={data.invoices} />
         </div>
       </header>
 

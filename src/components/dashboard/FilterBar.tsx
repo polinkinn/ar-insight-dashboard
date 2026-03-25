@@ -1,5 +1,5 @@
 import { useFilters } from "@/lib/filters";
-import { Client, LegalEntity } from "@/lib/store";
+import { Client, LegalEntity, Invoice } from "@/lib/store";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -8,6 +8,7 @@ import { ChevronDown } from "lucide-react";
 
 interface FilterBarProps {
   clients: Client[];
+  invoices: Invoice[];
 }
 
 const MONTHS_RU = [
@@ -15,8 +16,15 @@ const MONTHS_RU = [
   "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 ];
 
-export function FilterBar({ clients }: FilterBarProps) {
-  const { filters, setEntity, setMonths, setClientIds } = useFilters();
+export function FilterBar({ clients, invoices }: FilterBarProps) {
+  const { filters, setEntity, setMonths, setClientIds, setYear } = useFilters();
+
+  // Derive unique years from invoices
+  const years = Array.from(new Set(invoices.map((inv) => new Date(inv.issueDate).getFullYear()))).sort((a, b) => b - a);
+  if (!years.includes(filters.year)) {
+    years.push(filters.year);
+    years.sort((a, b) => b - a);
+  }
 
   const toggleMonth = (m: number) => {
     setMonths(
@@ -34,6 +42,20 @@ export function FilterBar({ clients }: FilterBarProps) {
 
   return (
     <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-muted-foreground uppercase tracking-widest">Год</span>
+        <Select value={String(filters.year)} onValueChange={(v) => setYear(Number(v))}>
+          <SelectTrigger className="w-[90px] h-8 text-xs bg-card border-border">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {years.map((y) => (
+              <SelectItem key={y} value={String(y)}>{y}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="flex items-center gap-2">
         <span className="text-xs text-muted-foreground uppercase tracking-widest">Месяцы</span>
         <Popover>

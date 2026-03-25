@@ -1,5 +1,5 @@
 import { Invoice, getInvoiceBalance, getDaysOverdue, isOverdue, Client } from "@/lib/store";
-import { formatUsd, formatDate } from "@/lib/format";
+import { formatUsd } from "@/lib/format";
 
 interface DashboardTablesProps {
   invoices: Invoice[];
@@ -9,7 +9,6 @@ interface DashboardTablesProps {
 export function DashboardTables({ invoices, clients }: DashboardTablesProps) {
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
-  // Top 5 clients by balance
   const clientBalances = new Map<string, number>();
   const clientTerms = new Map<string, string>();
   invoices.forEach((inv) => {
@@ -27,7 +26,6 @@ export function DashboardTables({ invoices, clients }: DashboardTablesProps) {
       terms: clientTerms.get(id) || "—",
     }));
 
-  // Overdue >60 days invoices
   const overdueInvoices = invoices
     .filter((i) => getDaysOverdue(i) > 60)
     .sort((a, b) => getDaysOverdue(b) - getDaysOverdue(a))
@@ -40,7 +38,7 @@ export function DashboardTables({ invoices, clients }: DashboardTablesProps) {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-card border border-border p-5 rounded-lg">
+      <div className="bg-card border border-border p-5 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">
           Топ-5 клиентов по балансу
         </h3>
@@ -67,7 +65,7 @@ export function DashboardTables({ invoices, clients }: DashboardTablesProps) {
         </table>
       </div>
 
-      <div className="bg-card border border-border p-5 rounded-lg">
+      <div className="bg-card border border-border p-5 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">
           Просрочено более 60 дней
         </h3>

@@ -3,8 +3,9 @@ import { LegalEntity, Invoice } from "./store";
 
 interface FilterState {
   entity: LegalEntity | "all";
-  months: number[]; // 0-11
+  months: number[];
   clientIds: string[];
+  year: number;
 }
 
 interface FilterContextValue {
@@ -12,6 +13,7 @@ interface FilterContextValue {
   setEntity: (e: LegalEntity | "all") => void;
   setMonths: (m: number[]) => void;
   setClientIds: (ids: string[]) => void;
+  setYear: (y: number) => void;
 }
 
 const FilterContext = createContext<FilterContextValue | null>(null);
@@ -21,6 +23,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
     entity: "all",
     months: [],
     clientIds: [],
+    year: new Date().getFullYear(),
   });
 
   return (
@@ -30,6 +33,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
         setEntity: (entity) => setFilters((f) => ({ ...f, entity })),
         setMonths: (months) => setFilters((f) => ({ ...f, months })),
         setClientIds: (clientIds) => setFilters((f) => ({ ...f, clientIds })),
+        setYear: (year) => setFilters((f) => ({ ...f, year })),
       }}
     >
       {children}
@@ -47,9 +51,10 @@ export function filterInvoices(invoices: Invoice[], filters: FilterState): Invoi
   return invoices.filter((inv) => {
     if (filters.entity !== "all" && inv.entity !== filters.entity) return false;
     if (filters.clientIds.length > 0 && !filters.clientIds.includes(inv.clientId)) return false;
+    const issueDate = new Date(inv.issueDate);
+    if (issueDate.getFullYear() !== filters.year) return false;
     if (filters.months.length > 0) {
-      const issueMonth = new Date(inv.issueDate).getMonth();
-      if (!filters.months.includes(issueMonth)) return false;
+      if (!filters.months.includes(issueDate.getMonth())) return false;
     }
     return true;
   });

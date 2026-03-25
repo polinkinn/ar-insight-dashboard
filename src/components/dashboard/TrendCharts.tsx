@@ -1,4 +1,4 @@
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
+import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, CartesianGrid } from "recharts";
 import { Invoice } from "@/lib/store";
 import { formatUsd } from "@/lib/format";
 
@@ -38,40 +38,42 @@ export function TrendCharts({ invoices }: TrendChartsProps) {
   });
 
   const tooltipStyle = {
-    contentStyle: { background: "hsl(240,4%,7%)", border: "1px solid hsl(240,4%,16%)", borderRadius: 4, fontSize: 12 },
-    labelStyle: { color: "hsl(0,0%,98%)" },
+    contentStyle: { background: "#ffffff", border: "1px solid hsl(220,13%,91%)", borderRadius: 6, fontSize: 12, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" },
+    labelStyle: { color: "hsl(224,15%,13%)" },
   };
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div className="bg-card border border-border p-5 rounded-lg">
+      <div className="bg-card border border-border p-5 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">
           Тенденция поступлений (План vs Факт)
         </h3>
         <ResponsiveContainer width="100%" height={220}>
           <LineChart data={trendData}>
-            <XAxis dataKey="month" tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} />
-            <YAxis tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,14%,96%)" vertical={false} />
+            <XAxis dataKey="month" tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} />
+            <YAxis tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
             <Tooltip {...tooltipStyle} formatter={(value: number) => [formatUsd(value)]} />
             <Line type="monotone" dataKey="plan" stroke="hsl(217,91%,60%)" strokeWidth={1.5} dot={false} name="План" />
-            <Line type="monotone" dataKey="fact" stroke="hsl(142,71%,45%)" strokeWidth={1.5} dot={false} name="Факт" />
-            <Legend wrapperStyle={{ fontSize: 11, color: "hsl(0,0%,65%)" }} />
+            <Line type="monotone" dataKey="fact" stroke="hsl(160,84%,39%)" strokeWidth={1.5} dot={false} name="Факт" />
+            <Legend wrapperStyle={{ fontSize: 11, color: "hsl(220,9%,46%)" }} />
           </LineChart>
         </ResponsiveContainer>
       </div>
 
-      <div className="bg-card border border-border p-5 rounded-lg">
+      <div className="bg-card border border-border p-5 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">
           Начисление и Оплаты
         </h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={trendData}>
-            <XAxis dataKey="month" tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} />
-            <YAxis tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,14%,96%)" vertical={false} />
+            <XAxis dataKey="month" tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} />
+            <YAxis tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
             <Tooltip {...tooltipStyle} formatter={(value: number) => [formatUsd(value)]} />
             <Bar dataKey="plan" fill="hsl(217,91%,60%)" radius={[2, 2, 0, 0]} barSize={14} name="Начисление" />
-            <Bar dataKey="fact" fill="hsl(142,71%,45%)" radius={[2, 2, 0, 0]} barSize={14} name="Оплаты" />
-            <Legend wrapperStyle={{ fontSize: 11, color: "hsl(0,0%,65%)" }} />
+            <Bar dataKey="fact" fill="hsl(160,84%,39%)" radius={[2, 2, 0, 0]} barSize={14} name="Оплаты" />
+            <Legend wrapperStyle={{ fontSize: 11, color: "hsl(220,9%,46%)" }} />
           </BarChart>
         </ResponsiveContainer>
       </div>
