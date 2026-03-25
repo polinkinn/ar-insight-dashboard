@@ -1,6 +1,6 @@
 import { AlertTriangle, Clock, CheckCircle, DollarSign } from "lucide-react";
 import { formatUsd } from "@/lib/format";
-import { Invoice, getInvoiceBalance, isOverdue, getInvoicePaidUsd } from "@/lib/store";
+import { Invoice, getInvoiceBalance, isOverdue } from "@/lib/store";
 
 interface KpiCardsProps {
   invoices: Invoice[];
@@ -41,7 +41,7 @@ export function KpiCards({ invoices }: KpiCardsProps) {
       {cards.map((card) => (
         <div
           key={card.label}
-          className="bg-card border border-border p-5 rounded-lg hover:border-muted-foreground/30 transition-colors"
+          className="bg-card border border-border p-5 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.08)] hover:shadow-[0_2px_8px_rgba(0,0,0,0.12)] transition-shadow"
         >
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium uppercase tracking-widest text-muted-foreground">

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell } from "recharts";
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, Cell, CartesianGrid } from "recharts";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Invoice, Client, getInvoiceBalance, getDaysOverdue, isOverdue } from "@/lib/store";
-import { formatUsd, formatDate } from "@/lib/format";
+import { formatUsd } from "@/lib/format";
 
 interface AgingChartProps {
   invoices: Invoice[];
@@ -47,19 +47,20 @@ export function AgingChart({ invoices, clients = [] }: AgingChartProps) {
 
   return (
     <>
-      <div className="bg-card border border-border p-5 rounded-lg">
+      <div className="bg-card border border-border p-5 rounded-lg shadow-[0_1px_4px_rgba(0,0,0,0.08)]">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">
           Старение дебиторской задолженности
         </h3>
         <ResponsiveContainer width="100%" height={240}>
           <BarChart data={bucketData} margin={{ left: 10, right: 10, bottom: 5 }} onClick={handleBarClick}>
-            <XAxis dataKey="bucket" tick={{ fill: "hsl(0,0%,65%)", fontSize: 12 }} />
-            <YAxis tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
+            <CartesianGrid strokeDasharray="3 3" stroke="hsl(220,14%,96%)" vertical={false} />
+            <XAxis dataKey="bucket" tick={{ fill: "hsl(220,9%,46%)", fontSize: 12 }} />
+            <YAxis tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
             <Tooltip
-              contentStyle={{ background: "hsl(240,4%,7%)", border: "1px solid hsl(240,4%,16%)", borderRadius: 4 }}
-              labelStyle={{ color: "hsl(0,0%,98%)" }}
+              contentStyle={{ background: "#ffffff", border: "1px solid hsl(220,13%,91%)", borderRadius: 6, boxShadow: "0 2px 8px rgba(0,0,0,0.1)" }}
+              labelStyle={{ color: "hsl(224,15%,13%)" }}
               formatter={(value: number) => [formatUsd(value), "Сумма"]}
-              cursor={{ fill: "hsl(0,0%,100%,0.05)" }}
+              cursor={{ fill: "hsl(220,14%,96%)" }}
             />
             <Bar dataKey="amount" radius={[4, 4, 0, 0]} barSize={48} style={{ cursor: "pointer" }}>
               {bucketData.map((_, index) => (
