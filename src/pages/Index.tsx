@@ -13,7 +13,7 @@ import { BarChart3, Users, FileText } from "lucide-react";
 type Tab = "dashboard" | "clients" | "invoices";
 
 function DashboardContent() {
-  const { data, addClient, deleteClient, addInvoice, updateInvoice, deleteInvoice, addPayment } = useAppData();
+  const { data, addClient, deleteClient, updateClient, addInvoice, updateInvoice, deleteInvoice, addPayment } = useAppData();
   const { filters } = useFilters();
   const [tab, setTab] = useState<Tab>("dashboard");
 
@@ -87,6 +87,7 @@ function DashboardContent() {
           <ClientManager
             clients={data.clients}
             onAdd={addClient}
+            onEdit={updateClient}
             onDelete={deleteClient}
           />
         )}
