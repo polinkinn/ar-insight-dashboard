@@ -87,6 +87,7 @@ function DashboardContent() {
           <ClientManager
             clients={data.clients}
             onAdd={addClient}
+            onEdit={updateClient}
             onDelete={deleteClient}
           />
         )}
