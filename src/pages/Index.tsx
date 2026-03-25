@@ -68,7 +68,7 @@ function DashboardContent() {
             />
             <AgingChart invoices={filtered} clients={data.clients} />
             <TrendCharts invoices={filtered} allInvoices={filteredNonDate} />
-            <DashboardTables invoices={filtered} clients={data.clients} />
+            <DashboardTables invoices={filtered} allInvoices={filteredNonDate} clients={data.clients} selectedYear={filters.year} selectedMonths={filters.months} />
           </>
         )}
 
