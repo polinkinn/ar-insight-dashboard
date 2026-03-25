@@ -1,16 +1,16 @@
 import React, { createContext, useContext, useState, ReactNode } from "react";
-import { LegalEntity } from "./store";
+import { LegalEntity, Invoice } from "./store";
 
 interface FilterState {
   entity: LegalEntity | "all";
-  period: "month" | "quarter" | "year";
+  months: number[]; // 0-11
   clientIds: string[];
 }
 
 interface FilterContextValue {
   filters: FilterState;
   setEntity: (e: LegalEntity | "all") => void;
-  setPeriod: (p: "month" | "quarter" | "year") => void;
+  setMonths: (m: number[]) => void;
   setClientIds: (ids: string[]) => void;
 }
 
@@ -19,7 +19,7 @@ const FilterContext = createContext<FilterContextValue | null>(null);
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useState<FilterState>({
     entity: "all",
-    period: "year",
+    months: [],
     clientIds: [],
   });
 
@@ -28,7 +28,7 @@ export function FilterProvider({ children }: { children: ReactNode }) {
       value={{
         filters,
         setEntity: (entity) => setFilters((f) => ({ ...f, entity })),
-        setPeriod: (period) => setFilters((f) => ({ ...f, period })),
+        setMonths: (months) => setFilters((f) => ({ ...f, months })),
         setClientIds: (clientIds) => setFilters((f) => ({ ...f, clientIds })),
       }}
     >
@@ -43,13 +43,14 @@ export function useFilters() {
   return ctx;
 }
 
-// Filter invoices
-import { Invoice } from "./store";
-
 export function filterInvoices(invoices: Invoice[], filters: FilterState): Invoice[] {
   return invoices.filter((inv) => {
     if (filters.entity !== "all" && inv.entity !== filters.entity) return false;
     if (filters.clientIds.length > 0 && !filters.clientIds.includes(inv.clientId)) return false;
+    if (filters.months.length > 0) {
+      const issueMonth = new Date(inv.issueDate).getMonth();
+      if (!filters.months.includes(issueMonth)) return false;
+    }
     return true;
   });
 }

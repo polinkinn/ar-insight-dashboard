@@ -1,10 +1,10 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import {
   AppData, loadData, seedDemoData,
-  addClient as _addClient, deleteClient as _deleteClient,
-  addInvoice as _addInvoice, deleteInvoice as _deleteInvoice,
+  addClient as _addClient, deleteClient as _deleteClient, updateClient as _updateClient,
+  addInvoice as _addInvoice, deleteInvoice as _deleteInvoice, updateInvoice as _updateInvoice,
   addPayment as _addPayment,
-  Client, Invoice, LegalEntity,
+  Client, Invoice, PaymentResolution,
 } from "./store";
 
 export function useAppData() {
@@ -22,9 +22,20 @@ export function useAppData() {
     setData((d) => _deleteClient(d, id));
   }, []);
 
+  const updateClient = useCallback((id: string, updates: Partial<Client>) => {
+    setData((d) => _updateClient(d, id, updates));
+  }, []);
+
   const addInvoice = useCallback(
-    (inv: Omit<Invoice, "id" | "payments" | "amountUsd" | "currency"> & { amount: number; exchangeRate: number | null }) => {
+    (inv: Omit<Invoice, "id" | "payments" | "amountUsd" | "currency" | "paymentResolution"> & { amount: number; exchangeRate: number | null }) => {
       setData((d) => _addInvoice(d, inv));
+    },
+    []
+  );
+
+  const updateInvoice = useCallback(
+    (invoiceId: string, inv: Omit<Invoice, "id" | "payments" | "amountUsd" | "currency" | "paymentResolution"> & { amount: number; exchangeRate: number | null }) => {
+      setData((d) => _updateInvoice(d, invoiceId, inv));
     },
     []
   );
@@ -33,9 +44,9 @@ export function useAppData() {
     setData((d) => _deleteInvoice(d, id));
   }, []);
 
-  const addPayment = useCallback((invoiceId: string, payment: { amount: number; date: string }) => {
-    setData((d) => _addPayment(d, invoiceId, payment));
+  const addPayment = useCallback((invoiceId: string, payment: { amount: number; date: string }, resolution?: PaymentResolution) => {
+    setData((d) => _addPayment(d, invoiceId, payment, resolution || null));
   }, []);
 
-  return { data, addClient, deleteClient, addInvoice, deleteInvoice, addPayment };
+  return { data, addClient, deleteClient, updateClient, addInvoice, updateInvoice, deleteInvoice, addPayment };
 }

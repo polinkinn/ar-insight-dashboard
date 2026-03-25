@@ -1,5 +1,5 @@
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Legend } from "recharts";
-import { Invoice, getInvoicePaidUsd } from "@/lib/store";
+import { Invoice } from "@/lib/store";
 import { formatUsd } from "@/lib/format";
 
 interface TrendChartsProps {
@@ -62,15 +62,15 @@ export function TrendCharts({ invoices }: TrendChartsProps) {
 
       <div className="bg-card border border-border p-5 rounded-lg">
         <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-widest mb-4">
-          Сравнение: выставлено vs собрано
+          Начисление и Оплаты
         </h3>
         <ResponsiveContainer width="100%" height={220}>
           <BarChart data={trendData}>
             <XAxis dataKey="month" tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} />
             <YAxis tick={{ fill: "hsl(0,0%,65%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
             <Tooltip {...tooltipStyle} formatter={(value: number) => [formatUsd(value)]} />
-            <Bar dataKey="plan" fill="hsl(217,91%,60%)" radius={[2, 2, 0, 0]} barSize={14} name="Выставлено" />
-            <Bar dataKey="fact" fill="hsl(142,71%,45%)" radius={[2, 2, 0, 0]} barSize={14} name="Собрано" />
+            <Bar dataKey="plan" fill="hsl(217,91%,60%)" radius={[2, 2, 0, 0]} barSize={14} name="Начисление" />
+            <Bar dataKey="fact" fill="hsl(142,71%,45%)" radius={[2, 2, 0, 0]} barSize={14} name="Оплаты" />
             <Legend wrapperStyle={{ fontSize: 11, color: "hsl(0,0%,65%)" }} />
           </BarChart>
         </ResponsiveContainer>

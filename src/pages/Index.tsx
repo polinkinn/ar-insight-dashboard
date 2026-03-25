@@ -13,7 +13,7 @@ import { BarChart3, Users, FileText } from "lucide-react";
 type Tab = "dashboard" | "clients" | "invoices";
 
 function DashboardContent() {
-  const { data, addClient, deleteClient, addInvoice, deleteInvoice, addPayment } = useAppData();
+  const { data, addClient, deleteClient, addInvoice, updateInvoice, deleteInvoice, addPayment } = useAppData();
   const { filters } = useFilters();
   const [tab, setTab] = useState<Tab>("dashboard");
 
@@ -27,7 +27,6 @@ function DashboardContent() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-10">
         <div className="max-w-[1720px] mx-auto px-6 py-3 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -55,12 +54,11 @@ function DashboardContent() {
         </div>
       </header>
 
-      {/* Content */}
       <main className="max-w-[1720px] mx-auto px-6 py-5 space-y-4">
         {tab === "dashboard" && (
           <>
             <KpiCards invoices={filtered} />
-            <AgingChart invoices={filtered} />
+            <AgingChart invoices={filtered} clients={data.clients} />
             <TrendCharts invoices={filtered} />
             <DashboardTables invoices={filtered} clients={data.clients} />
           </>
@@ -71,6 +69,7 @@ function DashboardContent() {
             invoices={filtered}
             clients={data.clients}
             onAddInvoice={addInvoice}
+            onUpdateInvoice={updateInvoice}
             onDeleteInvoice={deleteInvoice}
             onAddPayment={addPayment}
           />
