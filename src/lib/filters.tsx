@@ -47,6 +47,7 @@ export function useFilters() {
   return ctx;
 }
 
+/** Filter by ALL criteria: year + months + entity + client (based on issueDate) */
 export function filterInvoices(invoices: Invoice[], filters: FilterState): Invoice[] {
   return invoices.filter((inv) => {
     if (filters.entity !== "all" && inv.entity !== filters.entity) return false;
@@ -56,6 +57,15 @@ export function filterInvoices(invoices: Invoice[], filters: FilterState): Invoi
     if (filters.months.length > 0) {
       if (!filters.months.includes(issueDate.getMonth())) return false;
     }
+    return true;
+  });
+}
+
+/** Filter by entity + client only (no date filter). Used for payment-date based metrics. */
+export function filterInvoicesNonDate(invoices: Invoice[], filters: FilterState): Invoice[] {
+  return invoices.filter((inv) => {
+    if (filters.entity !== "all" && inv.entity !== filters.entity) return false;
+    if (filters.clientIds.length > 0 && !filters.clientIds.includes(inv.clientId)) return false;
     return true;
   });
 }
