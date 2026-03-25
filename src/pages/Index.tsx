@@ -8,23 +8,23 @@ import { DashboardTables } from "@/components/dashboard/DashboardTables";
 import { FilterBar } from "@/components/dashboard/FilterBar";
 import { ClientManager } from "@/components/management/ClientManager";
 import { InvoiceManager } from "@/components/management/InvoiceManager";
-import { BarChart3, Users, FileText } from "lucide-react";
+import { PaymentManager } from "@/components/management/PaymentManager";
+import { BarChart3, Users, FileText, CreditCard } from "lucide-react";
 
-type Tab = "dashboard" | "clients" | "invoices";
+type Tab = "dashboard" | "clients" | "invoices" | "payments";
 
 function DashboardContent() {
-  const { data, addClient, deleteClient, updateClient, addInvoice, updateInvoice, deleteInvoice, addPayment } = useAppData();
+  const { data, addClient, deleteClient, updateClient, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment } = useAppData();
   const { filters } = useFilters();
   const [tab, setTab] = useState<Tab>("dashboard");
 
-  // Filtered by all filters (year + months + entity + client) based on issueDate
   const filtered = filterInvoices(data.invoices, filters);
-  // Filtered by entity + client only (for payment-date based metrics)
   const filteredNonDate = filterInvoicesNonDate(data.invoices, filters);
 
   const tabs: { id: Tab; label: string; icon: typeof BarChart3 }[] = [
     { id: "dashboard", label: "Дашборд", icon: BarChart3 },
     { id: "invoices", label: "Инвойсы", icon: FileText },
+    { id: "payments", label: "Оплаты", icon: CreditCard },
     { id: "clients", label: "Клиенты", icon: Users },
   ];
 
@@ -80,6 +80,17 @@ function DashboardContent() {
             onUpdateInvoice={updateInvoice}
             onDeleteInvoice={deleteInvoice}
             onAddPayment={addPayment}
+          />
+        )}
+
+        {tab === "payments" && (
+          <PaymentManager
+            invoices={filteredNonDate}
+            clients={data.clients}
+            selectedYear={filters.year}
+            selectedMonths={filters.months}
+            onUpdatePayment={updatePayment}
+            onDeletePayment={deletePayment}
           />
         )}
 
