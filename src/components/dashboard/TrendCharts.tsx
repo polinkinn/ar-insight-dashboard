@@ -3,7 +3,8 @@ import { Invoice } from "@/lib/store";
 import { formatUsd } from "@/lib/format";
 
 interface TrendChartsProps {
-  invoices: Invoice[];
+  invoices: Invoice[];      // filtered by issueDate (for Начисление)
+  allInvoices: Invoice[];   // all invoices (for payment-date based data)
 }
 
 const MONTHS_RU = ["Янв", "Фев", "Мар", "Апр", "Май", "Июн", "Июл", "Авг", "Сен", "Окт", "Ноя", "Дек"];
@@ -21,20 +22,27 @@ function getLast12Months() {
   return result;
 }
 
-export function TrendCharts({ invoices }: TrendChartsProps) {
+export function TrendCharts({ invoices, allInvoices }: TrendChartsProps) {
   const months = getLast12Months();
 
   const trendData = months.map(({ month, key }) => {
+    // Начисление: invoices issued in this month (from filtered set)
     const issued = invoices
       .filter((i) => i.issueDate.startsWith(key))
       .reduce((s, i) => s + i.amountUsd, 0);
 
-    const collected = invoices.reduce((s, inv) => {
+    // Оплаты (Fact): payments with payment.date in this month (from ALL invoices)
+    const collected = allInvoices.reduce((s, inv) => {
       const monthPayments = inv.payments.filter((p) => p.date.startsWith(key));
       return s + monthPayments.reduce((ps, p) => ps + p.amountUsd, 0);
     }, 0);
 
-    return { month, plan: issued, fact: collected };
+    // План: invoices with dueDate in this month (from filtered set) - expected receipts
+    const planned = invoices
+      .filter((i) => i.dueDate.startsWith(key))
+      .reduce((s, i) => s + i.amountUsd, 0);
+
+    return { month, issued, collected, planned };
   });
 
   const tooltipStyle = {
@@ -54,8 +62,8 @@ export function TrendCharts({ invoices }: TrendChartsProps) {
             <XAxis dataKey="month" tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} />
             <YAxis tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
             <Tooltip {...tooltipStyle} formatter={(value: number) => [formatUsd(value)]} />
-            <Line type="monotone" dataKey="plan" stroke="hsl(217,91%,60%)" strokeWidth={1.5} dot={false} name="План" />
-            <Line type="monotone" dataKey="fact" stroke="hsl(160,84%,39%)" strokeWidth={1.5} dot={false} name="Факт" />
+            <Line type="monotone" dataKey="planned" stroke="hsl(217,91%,60%)" strokeWidth={1.5} dot={false} name="План" />
+            <Line type="monotone" dataKey="collected" stroke="hsl(160,84%,39%)" strokeWidth={1.5} dot={false} name="Факт" />
             <Legend wrapperStyle={{ fontSize: 11, color: "hsl(220,9%,46%)" }} />
           </LineChart>
         </ResponsiveContainer>
@@ -71,8 +79,8 @@ export function TrendCharts({ invoices }: TrendChartsProps) {
             <XAxis dataKey="month" tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} />
             <YAxis tick={{ fill: "hsl(220,9%,46%)", fontSize: 11 }} tickFormatter={(v) => `$${(v / 1000).toFixed(0)}k`} />
             <Tooltip {...tooltipStyle} formatter={(value: number) => [formatUsd(value)]} />
-            <Bar dataKey="plan" fill="hsl(217,91%,60%)" radius={[2, 2, 0, 0]} barSize={14} name="Начисление" />
-            <Bar dataKey="fact" fill="hsl(160,84%,39%)" radius={[2, 2, 0, 0]} barSize={14} name="Оплаты" />
+            <Bar dataKey="issued" fill="hsl(217,91%,60%)" radius={[2, 2, 0, 0]} barSize={14} name="Начисление" />
+            <Bar dataKey="collected" fill="hsl(160,84%,39%)" radius={[2, 2, 0, 0]} barSize={14} name="Оплаты" />
             <Legend wrapperStyle={{ fontSize: 11, color: "hsl(220,9%,46%)" }} />
           </BarChart>
         </ResponsiveContainer>

@@ -57,9 +57,14 @@ function DashboardContent() {
       <main className="max-w-[1720px] mx-auto px-6 py-5 space-y-4">
         {tab === "dashboard" && (
           <>
-            <KpiCards invoices={filtered} />
+            <KpiCards
+              invoices={filtered}
+              allInvoices={data.invoices}
+              selectedYear={filters.year}
+              selectedMonths={filters.months}
+            />
             <AgingChart invoices={filtered} clients={data.clients} />
-            <TrendCharts invoices={filtered} />
+            <TrendCharts invoices={filtered} allInvoices={data.invoices} />
             <DashboardTables invoices={filtered} clients={data.clients} />
           </>
         )}
