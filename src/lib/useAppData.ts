@@ -3,7 +3,7 @@ import {
   AppData, loadData, seedDemoData,
   addClient as _addClient, deleteClient as _deleteClient, updateClient as _updateClient,
   addInvoice as _addInvoice, deleteInvoice as _deleteInvoice, updateInvoice as _updateInvoice,
-  addPayment as _addPayment,
+  addPayment as _addPayment, updatePayment as _updatePayment, deletePayment as _deletePayment,
   Client, Invoice, PaymentResolution,
 } from "./store";
 
@@ -48,5 +48,13 @@ export function useAppData() {
     setData((d) => _addPayment(d, invoiceId, payment, resolution || null));
   }, []);
 
-  return { data, addClient, deleteClient, updateClient, addInvoice, updateInvoice, deleteInvoice, addPayment };
+  const updatePayment = useCallback((invoiceId: string, paymentId: string, updates: { amount?: number; date?: string; bankCommission?: number }, resolution?: PaymentResolution) => {
+    setData((d) => _updatePayment(d, invoiceId, paymentId, updates, resolution));
+  }, []);
+
+  const deletePayment = useCallback((invoiceId: string, paymentId: string) => {
+    setData((d) => _deletePayment(d, invoiceId, paymentId));
+  }, []);
+
+  return { data, addClient, deleteClient, updateClient, addInvoice, updateInvoice, deleteInvoice, addPayment, updatePayment, deletePayment };
 }
