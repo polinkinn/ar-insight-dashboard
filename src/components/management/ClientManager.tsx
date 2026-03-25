@@ -3,14 +3,12 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Client, LegalEntity } from "@/lib/store";
+import { Client } from "@/lib/store";
 import { Plus, Trash2 } from "lucide-react";
-import { formatDate } from "@/lib/format";
 
 interface ClientManagerProps {
   clients: Client[];
-  onAdd: (client: { nameDejure: string; nameDefacto: string }) => void;
+  onAdd: (client: { nameDejure: string; nameDefacto: string; paymentTerms: string }) => void;
   onDelete: (id: string) => void;
 }
 
@@ -18,12 +16,14 @@ export function ClientManager({ clients, onAdd, onDelete }: ClientManagerProps) 
   const [open, setOpen] = useState(false);
   const [dejure, setDejure] = useState("");
   const [defacto, setDefacto] = useState("");
+  const [terms, setTerms] = useState("");
 
   const handleAdd = () => {
     if (!dejure.trim() || !defacto.trim()) return;
-    onAdd({ nameDejure: dejure.trim(), nameDefacto: defacto.trim() });
+    onAdd({ nameDejure: dejure.trim(), nameDefacto: defacto.trim(), paymentTerms: terms.trim() });
     setDejure("");
     setDefacto("");
+    setTerms("");
     setOpen(false);
   };
 
@@ -50,6 +50,10 @@ export function ClientManager({ clients, onAdd, onDelete }: ClientManagerProps) 
                 <Label className="text-xs text-muted-foreground">Факт. наименование (De Facto)</Label>
                 <Input value={defacto} onChange={(e) => setDefacto(e.target.value)} className="bg-background border-border mt-1" />
               </div>
+              <div>
+                <Label className="text-xs text-muted-foreground">Условия оплаты</Label>
+                <Input value={terms} onChange={(e) => setTerms(e.target.value)} placeholder="Net 30" className="bg-background border-border mt-1" />
+              </div>
               <Button onClick={handleAdd} className="w-full">Создать клиента</Button>
             </div>
           </DialogContent>
@@ -60,6 +64,7 @@ export function ClientManager({ clients, onAdd, onDelete }: ClientManagerProps) 
           <tr className="text-xs text-muted-foreground uppercase tracking-wider border-b border-border">
             <th className="text-left pb-2">Наименование</th>
             <th className="text-left pb-2">Юр. имя</th>
+            <th className="text-left pb-2">Условия оплаты</th>
             <th className="text-right pb-2"></th>
           </tr>
         </thead>
@@ -68,6 +73,7 @@ export function ClientManager({ clients, onAdd, onDelete }: ClientManagerProps) 
             <tr key={c.id} className="border-b border-border/50 hover:bg-surface-alt transition-colors">
               <td className="py-2 text-foreground">{c.nameDefacto}</td>
               <td className="py-2 text-muted-foreground text-xs">{c.nameDejure}</td>
+              <td className="py-2 text-muted-foreground text-xs">{c.paymentTerms || "—"}</td>
               <td className="py-2 text-right">
                 <button onClick={() => onDelete(c.id)} className="text-muted-foreground hover:text-destructive transition-colors">
                   <Trash2 className="w-3.5 h-3.5" />
@@ -76,7 +82,7 @@ export function ClientManager({ clients, onAdd, onDelete }: ClientManagerProps) 
             </tr>
           ))}
           {clients.length === 0 && (
-            <tr><td colSpan={3} className="py-6 text-center text-muted-foreground">Нет клиентов</td></tr>
+            <tr><td colSpan={4} className="py-6 text-center text-muted-foreground">Нет клиентов</td></tr>
           )}
         </tbody>
       </table>
