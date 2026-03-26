@@ -368,7 +368,7 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       {!paid && (
-                        <Dialog open={payOpen === inv.id} onOpenChange={(o) => { setPayOpen(o ? inv.id : null); if (o) { setPayAmount(""); setPayDate(new Date()); } }}>
+                        <Dialog open={payOpen === inv.id} onOpenChange={(o) => { setPayOpen(o ? inv.id : null); if (o) { resetPayForm(); } }}>
                           <DialogTrigger asChild>
                             <button className="text-muted-foreground hover:text-primary transition-colors">
                               <CreditCard className="w-3.5 h-3.5" />
@@ -399,6 +399,19 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                                 <Label className="text-xs text-muted-foreground">Сумма ({inv.currency})</Label>
                                 <Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="bg-background border-border mt-1" />
                               </div>
+                              {clientMap.get(inv.clientId)?.nameDefacto?.toUpperCase().includes("CAINIAO") && (
+                                <>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Компенсация ({inv.currency})</Label>
+                                    <Input type="number" step="0.01" value={payCompensation} onChange={(e) => setPayCompensation(e.target.value)} placeholder="0" className="bg-background border-border mt-1" />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Банковская комиссия ({inv.currency})</Label>
+                                    <Input type="number" step="0.01" value={payBankCommission} onChange={(e) => setPayBankCommission(e.target.value)} placeholder="0" className="bg-background border-border mt-1" />
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground">Компенсация и комиссия будут списаны как расход. Инвойс закроется полностью.</p>
+                                </>
+                              )}
                               <div>
                                 <Label className="text-xs text-muted-foreground">Дата оплаты</Label>
                                 <Popover>
