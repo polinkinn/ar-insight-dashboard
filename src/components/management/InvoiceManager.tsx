@@ -203,6 +203,7 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                     <SelectItem value="DMZ">DMZ (USD)</SelectItem>
                     <SelectItem value="DM">DM (UZS)</SelectItem>
                     <SelectItem value="NWL">NWL (UZS)</SelectItem>
+                    <SelectItem value="NOVEX">NOVEX (USD)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
