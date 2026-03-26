@@ -42,6 +42,8 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
   // Payment form
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState<Date | undefined>(new Date());
+  const [payCompensation, setPayCompensation] = useState("");
+  const [payBankCommission, setPayBankCommission] = useState("");
 
   const isUzs = entity === "DM" || entity === "NWL";
   const clientMap = new Map(clients.map((c) => [c.id, c]));
@@ -120,9 +122,22 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
     if (!inv) return;
 
     const payAmountNum = parseFloat(payAmount);
+    const compensationNum = parseFloat(payCompensation) || 0;
+    const commissionNum = parseFloat(payBankCommission) || 0;
     const balanceNative = getInvoiceBalanceNative(inv);
 
-    if (payAmountNum < balanceNative - 0.01) {
+    // Check if this is a CAINIAO client with compensation/commission
+    const client = clientMap.get(inv.clientId);
+    const isCainiao = client?.nameDefacto?.toUpperCase().includes("CAINIAO");
+
+    if (isCainiao && (compensationNum > 0 || commissionNum > 0)) {
+      // Total coverage = payment + compensation + commission
+      const totalCoverage = payAmountNum + compensationNum + commissionNum;
+      // Register the full balance as payment to close the invoice
+      onAddPayment(invoiceId, { amount: balanceNative, date: format(payDate, "yyyy-MM-dd") }, "bank_commission");
+      resetPayForm();
+      setPayOpen(null);
+    } else if (payAmountNum < balanceNative - 0.01) {
       setResolutionOpen({
         invoiceId,
         remainder: balanceNative - payAmountNum,
@@ -132,10 +147,16 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
       setPayOpen(null);
     } else {
       onAddPayment(invoiceId, { amount: payAmountNum, date: format(payDate, "yyyy-MM-dd") });
-      setPayAmount("");
-      setPayDate(new Date());
+      resetPayForm();
       setPayOpen(null);
     }
+  };
+
+  const resetPayForm = () => {
+    setPayAmount("");
+    setPayDate(new Date());
+    setPayCompensation("");
+    setPayBankCommission("");
   };
 
   const handleResolution = (resolution: PaymentResolution) => {
@@ -156,6 +177,8 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
     setResolutionOpen(null);
     setPayAmount("");
     setPayDate(new Date());
+    setPayCompensation("");
+    setPayBankCommission("");
   };
 
   const remainderFormatted = resolutionOpen
@@ -203,6 +226,7 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                     <SelectItem value="DMZ">DMZ (USD)</SelectItem>
                     <SelectItem value="DM">DM (UZS)</SelectItem>
                     <SelectItem value="NWL">NWL (UZS)</SelectItem>
+                    <SelectItem value="NOVEX">NOVEX (USD)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -344,7 +368,7 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                         <Pencil className="w-3.5 h-3.5" />
                       </button>
                       {!paid && (
-                        <Dialog open={payOpen === inv.id} onOpenChange={(o) => { setPayOpen(o ? inv.id : null); if (o) { setPayAmount(""); setPayDate(new Date()); } }}>
+                        <Dialog open={payOpen === inv.id} onOpenChange={(o) => { setPayOpen(o ? inv.id : null); if (o) { resetPayForm(); } }}>
                           <DialogTrigger asChild>
                             <button className="text-muted-foreground hover:text-primary transition-colors">
                               <CreditCard className="w-3.5 h-3.5" />
@@ -375,6 +399,19 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                                 <Label className="text-xs text-muted-foreground">Сумма ({inv.currency})</Label>
                                 <Input type="number" step="0.01" value={payAmount} onChange={(e) => setPayAmount(e.target.value)} className="bg-background border-border mt-1" />
                               </div>
+                              {clientMap.get(inv.clientId)?.nameDefacto?.toUpperCase().includes("CAINIAO") && (
+                                <>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Компенсация ({inv.currency})</Label>
+                                    <Input type="number" step="0.01" value={payCompensation} onChange={(e) => setPayCompensation(e.target.value)} placeholder="0" className="bg-background border-border mt-1" />
+                                  </div>
+                                  <div>
+                                    <Label className="text-xs text-muted-foreground">Банковская комиссия ({inv.currency})</Label>
+                                    <Input type="number" step="0.01" value={payBankCommission} onChange={(e) => setPayBankCommission(e.target.value)} placeholder="0" className="bg-background border-border mt-1" />
+                                  </div>
+                                  <p className="text-[10px] text-muted-foreground">Компенсация и комиссия будут списаны как расход. Инвойс закроется полностью.</p>
+                                </>
+                              )}
                               <div>
                                 <Label className="text-xs text-muted-foreground">Дата оплаты</Label>
                                 <Popover>

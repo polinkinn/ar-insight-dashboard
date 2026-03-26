@@ -3,28 +3,26 @@ import { formatUsd } from "@/lib/format";
 
 interface DashboardTablesProps {
   invoices: Invoice[];
-  allInvoices: Invoice[];  // entity+client filtered, no date filter
+  allInvoices: Invoice[];
   clients: Client[];
-  selectedYear: number;
+  selectedYears: number[];
   selectedMonths: number[];
 }
 
-export function DashboardTables({ invoices, allInvoices, clients, selectedYear, selectedMonths }: DashboardTablesProps) {
+export function DashboardTables({ invoices, allInvoices, clients, selectedYears, selectedMonths }: DashboardTablesProps) {
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
-  // Top-5 by receipts: sum payments where payment.date falls in selected period
   const clientReceipts = new Map<string, number>();
   const clientPayDays = new Map<string, number[]>();
 
   allInvoices.forEach((inv) => {
     inv.payments.forEach((p) => {
       const pd = new Date(p.date);
-      if (pd.getFullYear() !== selectedYear) return;
+      if (selectedYears.length > 0 && !selectedYears.includes(pd.getFullYear())) return;
       if (selectedMonths.length > 0 && !selectedMonths.includes(pd.getMonth())) return;
 
       clientReceipts.set(inv.clientId, (clientReceipts.get(inv.clientId) || 0) + p.amountUsd);
 
-      // Calc days between issueDate and payment date
       const issueDate = new Date(inv.issueDate);
       const diffDays = Math.floor((pd.getTime() - issueDate.getTime()) / (1000 * 60 * 60 * 24));
       if (!clientPayDays.has(inv.clientId)) clientPayDays.set(inv.clientId, []);
@@ -38,14 +36,9 @@ export function DashboardTables({ invoices, allInvoices, clients, selectedYear, 
     .map(([id, receipts]) => {
       const days = clientPayDays.get(id) || [];
       const avgDays = days.length > 0 ? Math.round(days.reduce((a, b) => a + b, 0) / days.length) : null;
-      return {
-        name: clientMap.get(id)?.nameDefacto || id,
-        receipts,
-        avgDays,
-      };
+      return { name: clientMap.get(id)?.nameDefacto || id, receipts, avgDays };
     });
 
-  // Overdue >60 days (from issue-date filtered invoices)
   const overdueInvoices = invoices
     .filter((i) => getDaysOverdue(i) > 60)
     .sort((a, b) => getDaysOverdue(b) - getDaysOverdue(a))
@@ -72,7 +65,7 @@ export function DashboardTables({ invoices, allInvoices, clients, selectedYear, 
           </thead>
           <tbody>
             {topClients.map((c) => (
-              <tr key={c.name} className="border-b border-border/50 hover:bg-surface-alt transition-colors">
+              <tr key={c.name} className="border-b border-border/50 hover:bg-secondary transition-colors">
                 <td className="py-2.5 text-foreground">{c.name}</td>
                 <td className="py-2.5 text-right font-mono text-foreground">{formatUsd(c.receipts)}</td>
                 <td className="py-2.5 text-right font-mono text-muted-foreground">{c.avgDays !== null ? c.avgDays : "—"}</td>
@@ -100,7 +93,7 @@ export function DashboardTables({ invoices, allInvoices, clients, selectedYear, 
           </thead>
           <tbody>
             {overdueInvoices.map((inv) => (
-              <tr key={inv.number} className="border-b border-border/50 hover:bg-surface-alt transition-colors">
+              <tr key={inv.number} className="border-b border-border/50 hover:bg-secondary transition-colors">
                 <td className="py-2.5 font-mono text-foreground">{inv.number}</td>
                 <td className="py-2.5 text-foreground">{inv.client}</td>
                 <td className="py-2.5 text-right font-mono text-destructive font-medium">{inv.days}</td>

@@ -1,6 +1,6 @@
 // Data layer with localStorage persistence
 
-export type LegalEntity = "DMZ" | "DM" | "NWL";
+export type LegalEntity = "DMZ" | "DM" | "NWL" | "NOVEX";
 export type Currency = "USD" | "UZS";
 export type PaymentResolution = "bank_commission" | "partial_remaining" | "awaiting_topup" | null;
 
@@ -111,7 +111,7 @@ export function addInvoice(
   inv: Omit<Invoice, "id" | "payments" | "amountUsd" | "currency" | "paymentResolution"> & { amount: number; exchangeRate: number | null }
 ): AppData {
   const entity = inv.entity;
-  const currency: Currency = entity === "DMZ" ? "USD" : "UZS";
+  const currency: Currency = (entity === "DMZ" || entity === "NOVEX") ? "USD" : "UZS";
   const amountUsd = currency === "USD" ? inv.amount : inv.amount / (inv.exchangeRate || 1);
 
   const newInvoice: Invoice = {
@@ -134,7 +134,7 @@ export function updateInvoice(
   inv: Omit<Invoice, "id" | "payments" | "amountUsd" | "currency" | "paymentResolution"> & { amount: number; exchangeRate: number | null }
 ): AppData {
   const entity = inv.entity;
-  const currency: Currency = entity === "DMZ" ? "USD" : "UZS";
+  const currency: Currency = (entity === "DMZ" || entity === "NOVEX") ? "USD" : "UZS";
   const amountUsd = currency === "USD" ? inv.amount : inv.amount / (inv.exchangeRate || 1);
 
   const newData = {
