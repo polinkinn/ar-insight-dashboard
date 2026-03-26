@@ -42,6 +42,8 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
   // Payment form
   const [payAmount, setPayAmount] = useState("");
   const [payDate, setPayDate] = useState<Date | undefined>(new Date());
+  const [payCompensation, setPayCompensation] = useState("");
+  const [payBankCommission, setPayBankCommission] = useState("");
 
   const isUzs = entity === "DM" || entity === "NWL";
   const clientMap = new Map(clients.map((c) => [c.id, c]));
