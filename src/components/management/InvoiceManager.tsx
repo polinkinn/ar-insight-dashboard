@@ -177,6 +177,8 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
     setResolutionOpen(null);
     setPayAmount("");
     setPayDate(new Date());
+    setPayCompensation("");
+    setPayBankCommission("");
   };
 
   const remainderFormatted = resolutionOpen
