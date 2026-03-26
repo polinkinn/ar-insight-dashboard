@@ -44,7 +44,7 @@ function DashboardContent() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded transition-colors ${
                     tab === t.id
                       ? "bg-primary text-primary-foreground"
-                      : "text-muted-foreground hover:text-foreground hover:bg-surface-alt"
+                      : "text-muted-foreground hover:text-foreground hover:bg-secondary"
                   }`}
                 >
                   <t.icon className="w-3.5 h-3.5" />
@@ -63,12 +63,12 @@ function DashboardContent() {
             <KpiCards
               invoices={filtered}
               allInvoices={filteredNonDate}
-              selectedYear={filters.year}
+              selectedYears={filters.years}
               selectedMonths={filters.months}
             />
             <AgingChart invoices={filtered} clients={data.clients} />
             <TrendCharts invoices={filtered} allInvoices={filteredNonDate} />
-            <DashboardTables invoices={filtered} allInvoices={filteredNonDate} clients={data.clients} selectedYear={filters.year} selectedMonths={filters.months} />
+            <DashboardTables invoices={filtered} allInvoices={filteredNonDate} clients={data.clients} selectedYears={filters.years} selectedMonths={filters.months} />
           </>
         )}
 
@@ -87,7 +87,7 @@ function DashboardContent() {
           <PaymentManager
             invoices={filteredNonDate}
             clients={data.clients}
-            selectedYear={filters.year}
+            selectedYears={filters.years}
             selectedMonths={filters.months}
             onUpdatePayment={updatePayment}
             onDeletePayment={deletePayment}

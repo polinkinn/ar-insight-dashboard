@@ -8,13 +8,13 @@ const MONTHS_RU_FULL = [
 ];
 
 interface KpiCardsProps {
-  invoices: Invoice[];        // filtered by all filters (issueDate based)
-  allInvoices: Invoice[];     // filtered by entity+client only (for payment-date metrics)
-  selectedYear: number;
+  invoices: Invoice[];
+  allInvoices: Invoice[];
+  selectedYears: number[];
   selectedMonths: number[];
 }
 
-export function KpiCards({ invoices, allInvoices, selectedYear, selectedMonths }: KpiCardsProps) {
+export function KpiCards({ invoices, allInvoices, selectedYears, selectedMonths }: KpiCardsProps) {
   const totalAr = invoices.reduce((s, i) => s + getInvoiceBalance(i), 0);
   const overdueTotal = invoices.filter(isOverdue).reduce((s, i) => s + getInvoiceBalance(i), 0);
 
@@ -26,23 +26,23 @@ export function KpiCards({ invoices, allInvoices, selectedYear, selectedMonths }
     })
     .reduce((s, i) => s + getInvoiceBalance(i), 0);
 
-  // Payments filtered by payment.date matching year+months, from entity+client filtered invoices
   const paidInPeriod = allInvoices.reduce((s, inv) => {
     const matchingPayments = inv.payments.filter((p) => {
       const d = new Date(p.date);
-      if (d.getFullYear() !== selectedYear) return false;
+      if (selectedYears.length > 0 && !selectedYears.includes(d.getFullYear())) return false;
       if (selectedMonths.length > 0 && !selectedMonths.includes(d.getMonth())) return false;
       return true;
     });
     return s + matchingPayments.reduce((ps, p) => ps + p.amountUsd, 0);
   }, 0);
 
-  // Dynamic subtitle
   let periodLabel: string;
-  if (selectedMonths.length === 0 || selectedMonths.length === 12) {
-    periodLabel = `за ${selectedYear}`;
-  } else if (selectedMonths.length === 1) {
-    periodLabel = `за ${MONTHS_RU_FULL[selectedMonths[0]]} ${selectedYear}`;
+  if (selectedYears.length === 0 && (selectedMonths.length === 0 || selectedMonths.length === 12)) {
+    periodLabel = "за всё время";
+  } else if (selectedYears.length === 1 && (selectedMonths.length === 0 || selectedMonths.length === 12)) {
+    periodLabel = `за ${selectedYears[0]}`;
+  } else if (selectedYears.length === 1 && selectedMonths.length === 1) {
+    periodLabel = `за ${MONTHS_RU_FULL[selectedMonths[0]]} ${selectedYears[0]}`;
   } else {
     periodLabel = "за выбранный период";
   }
