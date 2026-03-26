@@ -2,38 +2,42 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 import { LegalEntity, Invoice } from "./store";
 
 interface FilterState {
-  entity: LegalEntity | "all";
+  entities: LegalEntity[];
   months: number[];
   clientIds: string[];
-  year: number;
+  years: number[];
+  search: string;
 }
 
 interface FilterContextValue {
   filters: FilterState;
-  setEntity: (e: LegalEntity | "all") => void;
+  setEntities: (e: LegalEntity[]) => void;
   setMonths: (m: number[]) => void;
   setClientIds: (ids: string[]) => void;
-  setYear: (y: number) => void;
+  setYears: (y: number[]) => void;
+  setSearch: (s: string) => void;
 }
 
 const FilterContext = createContext<FilterContextValue | null>(null);
 
 export function FilterProvider({ children }: { children: ReactNode }) {
   const [filters, setFilters] = useState<FilterState>({
-    entity: "all",
+    entities: [],
     months: [],
     clientIds: [],
-    year: new Date().getFullYear(),
+    years: [new Date().getFullYear()],
+    search: "",
   });
 
   return (
     <FilterContext.Provider
       value={{
         filters,
-        setEntity: (entity) => setFilters((f) => ({ ...f, entity })),
+        setEntities: (entities) => setFilters((f) => ({ ...f, entities })),
         setMonths: (months) => setFilters((f) => ({ ...f, months })),
         setClientIds: (clientIds) => setFilters((f) => ({ ...f, clientIds })),
-        setYear: (year) => setFilters((f) => ({ ...f, year })),
+        setYears: (years) => setFilters((f) => ({ ...f, years })),
+        setSearch: (search) => setFilters((f) => ({ ...f, search })),
       }}
     >
       {children}
@@ -47,25 +51,35 @@ export function useFilters() {
   return ctx;
 }
 
-/** Filter by ALL criteria: year + months + entity + client (based on issueDate) */
+/** Filter by ALL criteria: years + months + entities + client + search (based on issueDate) */
 export function filterInvoices(invoices: Invoice[], filters: FilterState): Invoice[] {
   return invoices.filter((inv) => {
-    if (filters.entity !== "all" && inv.entity !== filters.entity) return false;
+    if (filters.entities.length > 0 && !filters.entities.includes(inv.entity)) return false;
     if (filters.clientIds.length > 0 && !filters.clientIds.includes(inv.clientId)) return false;
     const issueDate = new Date(inv.issueDate);
-    if (issueDate.getFullYear() !== filters.year) return false;
-    if (filters.months.length > 0) {
-      if (!filters.months.includes(issueDate.getMonth())) return false;
+    if (filters.years.length > 0 && !filters.years.includes(issueDate.getFullYear())) return false;
+    if (filters.months.length > 0 && !filters.months.includes(issueDate.getMonth())) return false;
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      const matchText = inv.invoiceNumber.toLowerCase().includes(q) || (inv.description || "").toLowerCase().includes(q);
+      const matchAmount = !isNaN(Number(q)) && (Math.abs(inv.amountUsd - Number(q)) < 0.01 || Math.abs(inv.amount - Number(q)) < 0.01);
+      if (!matchText && !matchAmount) return false;
     }
     return true;
   });
 }
 
-/** Filter by entity + client only (no date filter). Used for payment-date based metrics. */
+/** Filter by entities + client only (no date filter). Used for payment-date based metrics. */
 export function filterInvoicesNonDate(invoices: Invoice[], filters: FilterState): Invoice[] {
   return invoices.filter((inv) => {
-    if (filters.entity !== "all" && inv.entity !== filters.entity) return false;
+    if (filters.entities.length > 0 && !filters.entities.includes(inv.entity)) return false;
     if (filters.clientIds.length > 0 && !filters.clientIds.includes(inv.clientId)) return false;
+    if (filters.search) {
+      const q = filters.search.toLowerCase();
+      const matchText = inv.invoiceNumber.toLowerCase().includes(q) || (inv.description || "").toLowerCase().includes(q);
+      const matchAmount = !isNaN(Number(q)) && (Math.abs(inv.amountUsd - Number(q)) < 0.01 || Math.abs(inv.amount - Number(q)) < 0.01);
+      if (!matchText && !matchAmount) return false;
+    }
     return true;
   });
 }
