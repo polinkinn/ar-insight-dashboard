@@ -122,9 +122,22 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
     if (!inv) return;
 
     const payAmountNum = parseFloat(payAmount);
+    const compensationNum = parseFloat(payCompensation) || 0;
+    const commissionNum = parseFloat(payBankCommission) || 0;
     const balanceNative = getInvoiceBalanceNative(inv);
 
-    if (payAmountNum < balanceNative - 0.01) {
+    // Check if this is a CAINIAO client with compensation/commission
+    const client = clientMap.get(inv.clientId);
+    const isCainiao = client?.nameDefacto?.toUpperCase().includes("CAINIAO");
+
+    if (isCainiao && (compensationNum > 0 || commissionNum > 0)) {
+      // Total coverage = payment + compensation + commission
+      const totalCoverage = payAmountNum + compensationNum + commissionNum;
+      // Register the full balance as payment to close the invoice
+      onAddPayment(invoiceId, { amount: balanceNative, date: format(payDate, "yyyy-MM-dd") }, "bank_commission");
+      resetPayForm();
+      setPayOpen(null);
+    } else if (payAmountNum < balanceNative - 0.01) {
       setResolutionOpen({
         invoiceId,
         remainder: balanceNative - payAmountNum,
@@ -134,10 +147,16 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
       setPayOpen(null);
     } else {
       onAddPayment(invoiceId, { amount: payAmountNum, date: format(payDate, "yyyy-MM-dd") });
-      setPayAmount("");
-      setPayDate(new Date());
+      resetPayForm();
       setPayOpen(null);
     }
+  };
+
+  const resetPayForm = () => {
+    setPayAmount("");
+    setPayDate(new Date());
+    setPayCompensation("");
+    setPayBankCommission("");
   };
 
   const handleResolution = (resolution: PaymentResolution) => {
