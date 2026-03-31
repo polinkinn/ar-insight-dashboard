@@ -432,9 +432,23 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
                           </DialogContent>
                         </Dialog>
                       )}
-                      <button onClick={() => onDeleteInvoice(inv.id)} className="text-muted-foreground hover:text-destructive transition-colors">
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <button className="text-muted-foreground hover:text-destructive transition-colors">
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent className="bg-card border-border">
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Удалить инвойс?</AlertDialogTitle>
+                            <AlertDialogDescription>Инвойс «{inv.id}» будет удалён вместе со всеми платежами. Это действие нельзя отменить.</AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Отмена</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => onDeleteInvoice(inv.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Удалить</AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </div>
                   </td>
                 </tr>
