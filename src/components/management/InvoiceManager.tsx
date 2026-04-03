@@ -51,6 +51,22 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
   const isUzs = entity === "DM" || entity === "NWL";
   const clientMap = new Map(clients.map((c) => [c.id, c]));
 
+  const sortGetters = useMemo(() => ({
+    amount: (inv: Invoice) => inv.amountUsd,
+    balance: (inv: Invoice) => getInvoiceBalance(inv),
+    dueDate: (inv: Invoice) => new Date(inv.dueDate).getTime(),
+    status: (inv: Invoice) => {
+      const balance = getInvoiceBalance(inv);
+      if (inv.paymentResolution === "bank_commission") return 0;
+      if (balance <= 0.01) return 1;
+      if (isOverdue(inv)) return 3;
+      if (inv.paymentResolution === "awaiting_topup") return 2;
+      return 4;
+    },
+  }), []);
+
+  const { sorted: sortedInvoices, sort, toggle } = useSortable(invoices, sortGetters);
+
   // Auto-fill payment terms when client changes
   useEffect(() => {
     if (clientId && !editingId) {
