@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
@@ -13,6 +13,8 @@ import { formatUsd, formatUsdFull, formatDate, formatAmount } from "@/lib/format
 import { Plus, Trash2, CreditCard, Pencil, CalendarIcon, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortableHeader } from "@/components/ui/sortable-header";
 
 interface InvoiceManagerProps {
   invoices: Invoice[];
@@ -48,6 +50,22 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
 
   const isUzs = entity === "DM" || entity === "NWL";
   const clientMap = new Map(clients.map((c) => [c.id, c]));
+
+  const sortGetters = useMemo(() => ({
+    amount: (inv: Invoice) => inv.amountUsd,
+    balance: (inv: Invoice) => getInvoiceBalance(inv),
+    dueDate: (inv: Invoice) => new Date(inv.dueDate).getTime(),
+    status: (inv: Invoice) => {
+      const balance = getInvoiceBalance(inv);
+      if (inv.paymentResolution === "bank_commission") return 0;
+      if (balance <= 0.01) return 1;
+      if (isOverdue(inv)) return 3;
+      if (inv.paymentResolution === "awaiting_topup") return 2;
+      return 4;
+    },
+  }), []);
+
+  const { sorted: sortedInvoices, sort, toggle } = useSortable(invoices, sortGetters);
 
   // Auto-fill payment terms when client changes
   useEffect(() => {
@@ -327,15 +345,23 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
               <th className="text-left pb-2">Клиент</th>
               <th className="text-left pb-2">Юр. лицо</th>
               <th className="text-left pb-2">Расшифровка</th>
-              <th className="text-right pb-2">Сумма (USD)</th>
-              <th className="text-right pb-2">Баланс</th>
-              <th className="text-right pb-2">Срок</th>
-              <th className="text-center pb-2">Статус</th>
+              <th className="text-right pb-2">
+                <SortableHeader label="Сумма (USD)" active={sort.key === "amount"} direction={sort.direction} onClick={() => toggle("amount")} className="text-xs uppercase tracking-wider justify-end" />
+              </th>
+              <th className="text-right pb-2">
+                <SortableHeader label="Баланс" active={sort.key === "balance"} direction={sort.direction} onClick={() => toggle("balance")} className="text-xs uppercase tracking-wider justify-end" />
+              </th>
+              <th className="text-right pb-2">
+                <SortableHeader label="Срок" active={sort.key === "dueDate"} direction={sort.direction} onClick={() => toggle("dueDate")} className="text-xs uppercase tracking-wider justify-end" />
+              </th>
+              <th className="text-center pb-2">
+                <SortableHeader label="Статус" active={sort.key === "status"} direction={sort.direction} onClick={() => toggle("status")} className="text-xs uppercase tracking-wider" />
+              </th>
               <th className="text-right pb-2"></th>
             </tr>
           </thead>
           <tbody>
-            {invoices.map((inv) => {
+            {sortedInvoices.map((inv) => {
               const balance = getInvoiceBalance(inv);
               const overdue = isOverdue(inv);
               const days = getDaysOverdue(inv);
