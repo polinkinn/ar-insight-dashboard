@@ -218,19 +218,31 @@ export function PaymentManager({ invoices, clients, selectedYears, selectedMonth
               <TableHead className="text-[10px] font-semibold tracking-wider uppercase">Инвойс #</TableHead>
               <TableHead className="text-[10px] font-semibold tracking-wider uppercase">Клиент</TableHead>
               <TableHead className="text-[10px] font-semibold tracking-wider uppercase">Юр. лицо</TableHead>
-              <TableHead className="text-[10px] font-semibold tracking-wider uppercase">Дата оплаты</TableHead>
-              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">Сумма инвойса</TableHead>
-              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">Сумма оплаты</TableHead>
-              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">Банк. комиссия</TableHead>
-              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">Остаток</TableHead>
-              <TableHead className="text-[10px] font-semibold tracking-wider uppercase">Статус</TableHead>
+              <TableHead className="text-[10px] font-semibold tracking-wider uppercase">
+                <SortableHeader label="Дата оплаты" active={paySort.key === "paymentDate"} direction={paySort.direction} onClick={() => payToggle("paymentDate")} className="text-[10px] uppercase tracking-wider" />
+              </TableHead>
+              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">
+                <SortableHeader label="Сумма инвойса" active={paySort.key === "invoiceAmountUsd"} direction={paySort.direction} onClick={() => payToggle("invoiceAmountUsd")} className="text-[10px] uppercase tracking-wider justify-end" />
+              </TableHead>
+              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">
+                <SortableHeader label="Сумма оплаты" active={paySort.key === "paymentAmountUsd"} direction={paySort.direction} onClick={() => payToggle("paymentAmountUsd")} className="text-[10px] uppercase tracking-wider justify-end" />
+              </TableHead>
+              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">
+                <SortableHeader label="Банк. комиссия" active={paySort.key === "bankCommission"} direction={paySort.direction} onClick={() => payToggle("bankCommission")} className="text-[10px] uppercase tracking-wider justify-end" />
+              </TableHead>
+              <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">
+                <SortableHeader label="Остаток" active={paySort.key === "remainder"} direction={paySort.direction} onClick={() => payToggle("remainder")} className="text-[10px] uppercase tracking-wider justify-end" />
+              </TableHead>
+              <TableHead className="text-[10px] font-semibold tracking-wider uppercase">
+                <SortableHeader label="Статус" active={paySort.key === "status"} direction={paySort.direction} onClick={() => payToggle("status")} className="text-[10px] uppercase tracking-wider" />
+              </TableHead>
               <TableHead className="text-[10px] font-semibold tracking-wider uppercase text-right">Действия</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.length === 0 ? (
+            {sortedPayments.length === 0 ? (
               <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8 text-sm">Нет платежей за выбранный период</TableCell></TableRow>
-            ) : filtered.map((p) => (
+            ) : sortedPayments.map((p) => (
               <TableRow key={p.paymentId}>
                 <TableCell className="text-xs font-medium">{p.invoiceNumber}</TableCell>
                 <TableCell className="text-xs">{p.clientName}</TableCell>
