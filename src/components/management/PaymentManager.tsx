@@ -97,6 +97,17 @@ export function PaymentManager({ invoices, clients, selectedYears, selectedMonth
     return allPayments.filter((p) => p.status === statusFilter);
   }, [allPayments, statusFilter]);
 
+  const paymentSortGetters = useMemo(() => ({
+    paymentDate: (p: FlatPayment) => new Date(p.paymentDate).getTime(),
+    invoiceAmountUsd: (p: FlatPayment) => p.invoiceAmountUsd,
+    paymentAmountUsd: (p: FlatPayment) => p.paymentAmountUsd,
+    bankCommission: (p: FlatPayment) => p.bankCommission,
+    remainder: (p: FlatPayment) => p.remainder,
+    status: (p: FlatPayment) => p.status === "paid" ? 0 : p.status === "commission" ? 1 : 2,
+  }), []);
+
+  const { sorted: sortedPayments, sort: paySort, toggle: payToggle } = useSortable(filtered, paymentSortGetters);
+
   const totalReceived = allPayments.reduce((s, p) => s + p.paymentAmountUsd, 0);
   const totalCommissions = useMemo(() => {
     const seen = new Set<string>();
