@@ -345,15 +345,23 @@ export function InvoiceManager({ invoices, clients, onAddInvoice, onUpdateInvoic
               <th className="text-left pb-2">Клиент</th>
               <th className="text-left pb-2">Юр. лицо</th>
               <th className="text-left pb-2">Расшифровка</th>
-              <th className="text-right pb-2">Сумма (USD)</th>
-              <th className="text-right pb-2">Баланс</th>
-              <th className="text-right pb-2">Срок</th>
-              <th className="text-center pb-2">Статус</th>
+              <th className="text-right pb-2">
+                <SortableHeader label="Сумма (USD)" active={sort.key === "amount"} direction={sort.direction} onClick={() => toggle("amount")} className="text-xs uppercase tracking-wider justify-end" />
+              </th>
+              <th className="text-right pb-2">
+                <SortableHeader label="Баланс" active={sort.key === "balance"} direction={sort.direction} onClick={() => toggle("balance")} className="text-xs uppercase tracking-wider justify-end" />
+              </th>
+              <th className="text-right pb-2">
+                <SortableHeader label="Срок" active={sort.key === "dueDate"} direction={sort.direction} onClick={() => toggle("dueDate")} className="text-xs uppercase tracking-wider justify-end" />
+              </th>
+              <th className="text-center pb-2">
+                <SortableHeader label="Статус" active={sort.key === "status"} direction={sort.direction} onClick={() => toggle("status")} className="text-xs uppercase tracking-wider" />
+              </th>
               <th className="text-right pb-2"></th>
             </tr>
           </thead>
           <tbody>
-            {invoices.map((inv) => {
+            {sortedInvoices.map((inv) => {
               const balance = getInvoiceBalance(inv);
               const overdue = isOverdue(inv);
               const days = getDaysOverdue(inv);
