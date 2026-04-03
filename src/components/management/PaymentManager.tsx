@@ -16,6 +16,8 @@ import { formatUsd, formatDate } from "@/lib/format";
 import { Pencil, Trash2, CalendarIcon, DollarSign, AlertTriangle, Clock } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortableHeader } from "@/components/ui/sortable-header";
 
 type PaymentStatus = "all" | "paid" | "partial" | "commission";
 
