@@ -13,6 +13,8 @@ import { formatUsd, formatUsdFull, formatDate, formatAmount } from "@/lib/format
 import { Plus, Trash2, CreditCard, Pencil, CalendarIcon, Copy } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useSortable } from "@/hooks/use-sortable";
+import { SortableHeader } from "@/components/ui/sortable-header";
 
 interface InvoiceManagerProps {
   invoices: Invoice[];
